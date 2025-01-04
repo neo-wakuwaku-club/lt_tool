@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LT 参加者コメント</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f9f9f9;
+        }
+
+        .comment-section {
+            width: 100%;
+            max-width: 400px;
+            background-color: #f8f9fa;
+            padding: 20px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .comment-form {
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .comment-form input, .comment-form textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .comment-form button {
+            width: 100%;
+            padding: 10px;
+            background-color: #2196f3;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .comment-form button:hover {
+            background-color: #1976d2;
+        }
+
+        .quick-comments {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .quick-comments button {
+            flex: 1;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .quick-comments button:hover {
+            background-color: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="comment-section">
+        <div class="comment-form">
+            <h2>コメント送信</h2>
+            <input type="text" id="name" placeholder="名前（任意）">
+            <textarea id="message" rows="3" placeholder="コメントを入力"></textarea>
+            <button id="sendBtn">送信</button>
+        </div>
+
+        <div class="quick-comments">
+            <button class="quick-comment-btn" data-message="8888888888">8888888888</button>
+            <button class="quick-comment-btn" data-message="いい話">いい話</button>
+            <button class="quick-comment-btn" data-message="感動🥺">感動🥺</button>
+            <button class="quick-comment-btn" data-message="すごい！">すごい！</button>
+            <button class="quick-comment-btn" data-message="最高！">最高！</button>
+        </div>
+    </div>
+
+    <!-- Socket.ioクライアントの読み込み -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        const sendBtn = document.getElementById('sendBtn');
+        const nameInput = document.getElementById('name');
+        const messageInput = document.getElementById('message');
+        const quickCommentButtons = document.querySelectorAll('.quick-comment-btn');
+
+        sendBtn.addEventListener('click', () => {
+            const name = nameInput.value.trim();
+            const message = messageInput.value.trim();
+
+            if (message === '') {
+                alert('コメントを入力してください。');
+                return;
+            }
+
+            // コメントをサーバーに送信
+            socket.emit('comment', { name, message });
+
+            // コメント入力欄のみリセット
+            messageInput.value = '';
+        });
+
+        // Enterキーで送信
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendBtn.click();
+            }
+        });
+
+        // クイックコメントボタンのクリックイベント
+        quickCommentButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const name = nameInput.value.trim();
+                const message = button.dataset.message;
+
+                // コメントをサーバーに送信
+                socket.emit('comment', { name, message });
+            });
+        });
+    </script>
+</body>
+</html>
